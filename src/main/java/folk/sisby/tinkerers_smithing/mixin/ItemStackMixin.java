@@ -1,6 +1,6 @@
 package folk.sisby.tinkerers_smithing.mixin;
 
-import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import folk.sisby.tinkerers_smithing.TinkerersSmithing;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.EquipmentSlot;
@@ -24,10 +24,10 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -38,6 +38,12 @@ import java.util.function.Consumer;
 
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin {
+	@Shadow
+	public abstract Item getItem();
+
+	@Shadow
+	public abstract int getDamage();
+
 	@Unique
 	private boolean isBroken() {
 		return TinkerersSmithing.isBroken((ItemStack) (Object) this);
@@ -100,15 +106,14 @@ public abstract class ItemStackMixin {
 		if (isKeeper() && isBroken()) ci.cancel();
 	}
 
-	@WrapWithCondition(method = "damage(ILnet/minecraft/server/world/ServerWorld;Lnet/minecraft/server/network/ServerPlayerEntity;Ljava/util/function/Consumer;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;decrement(I)V"))
-	private boolean dontBreakDecrementKeepers(ItemStack instance, int amount) {
-		return !isKeeper();
-	}
-
-	@ModifyArg(method = "damage(ILnet/minecraft/server/world/ServerWorld;Lnet/minecraft/server/network/ServerPlayerEntity;Ljava/util/function/Consumer;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;setDamage(I)V"))
-	private int dontBreakResetKeepers(int damage) {
-//		return isKeeper() ? ((ItemStack) (Object) this).getMaxDamage() : damage;
-		return damage;
+	@ModifyExpressionValue(method = "damage(ILnet/minecraft/server/world/ServerWorld;Lnet/minecraft/server/network/ServerPlayerEntity;Ljava/util/function/Consumer;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;getMaxDamage()I"))
+	private int dontBreakDecrementKeepers(int original, int amount, ServerWorld world, @Nullable ServerPlayerEntity player, Consumer<Item> breakCallback) {
+		if (getDamage() >= original && isKeeper()) {
+			breakCallback.accept(getItem());
+			return Integer.MAX_VALUE;
+		} else {
+			return original;
+		}
 	}
 
 	@Inject(method = "getTooltip", at = @At(value = "RETURN"), cancellable = true)
