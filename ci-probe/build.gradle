@@ -14,7 +14,12 @@ dependencies {
 	mappings variantOf(libs.yarn) { classifier "v2" }
 	modImplementation libs.fl
 	modImplementation libs.fapi
-	modImplementation project(path: ":", configuration: "namedElements")
+	// 探针只在编译时读取主模组公开类；运行时由 CI 把两个 remap 后 jar 一起放入 mods。
+	compileOnly rootProject.sourceSets.main.output
+}
+
+tasks.named("compileJava") {
+	dependsOn rootProject.tasks.named("classes")
 }
 
 tasks.withType(JavaCompile).configureEach {
