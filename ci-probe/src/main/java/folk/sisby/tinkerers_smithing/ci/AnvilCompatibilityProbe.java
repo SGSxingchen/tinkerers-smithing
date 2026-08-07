@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import folk.sisby.tinkerers_smithing.TinkerersSmithing;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -150,7 +151,7 @@ public final class AnvilCompatibilityProbe implements ModInitializer {
 				inputDamage,
 				output.isEmpty() ? -1 : output.getDamage(),
 				this.getLevelCost(),
-				expectCustomName && !output.isEmpty() && output.hasCustomName()
+				expectCustomName && !output.isEmpty() && output.contains(DataComponentTypes.CUSTOM_NAME)
 			);
 		}
 	}
