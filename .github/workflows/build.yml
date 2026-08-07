@@ -51,7 +51,7 @@ jobs:
             .ci-fabric-server/.mixin.out/**
 
   neoforge-1201-connector-ffapi:
-    needs: fabric-1201
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

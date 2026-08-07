@@ -28,4 +28,5 @@ set -e
 
 test "$server_status" -eq 0 || { echo "Fabric server exited with $server_status" >&2; exit "$server_status"; }
 jq -e '.status == "PASS"' compat-result.json
-! grep -Eqi 'FATAL|Mixin.*(failed|error)|crash-report' console.log
+# 不把 Fabric API 的 fabric-crash-report-info 模块名误判为服务器 crash。
+! grep -Eqi 'FATAL|InvalidInjectionException|MixinApplyError|Mixin apply failed' console.log

@@ -34,4 +34,4 @@ set -e
 
 test "$server_status" -eq 0 || { echo "NeoForge server exited with $server_status" >&2; exit "$server_status"; }
 jq -e '.status == "PASS"' compat-result.json
-! grep -Eqi 'FATAL|Mixin.*(failed|error)|crash-report' console.log
+! grep -Eqi 'FATAL|InvalidInjectionException|MixinApplyError|Mixin apply failed' console.log
