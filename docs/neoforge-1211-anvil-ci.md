@@ -67,6 +67,21 @@ NeoForge job 会保存 Connector 实际转换缓存中的主模组 jar、转换�
 切片内第一次 `Property.set`。因此两端都精确命中最终 cost 写入，不再依赖会被 NeoForge 增加的
 全局调用 ordinal；规则层、配方、目标方法、修理伤害和其余注入均不改动。
 
+## 已保留的红绿证据
+
+- 红测：[run 31149603197](https://github.com/SGSxingchen/tinkerers-smithing/actions/runs/31149603197)
+  （提交 `4190fa7`）中，Fabric 1.21.1 通过而 NeoForge 组合失败；两端都完成正常停服。NeoForge
+  探针记录了 69 个运行时修理配方与铁剑配方存在，却在最终输出为空时失败，排除了“没有配方”的假设。
+- 绿测：[run 31150604134](https://github.com/SGSxingchen/tinkerers-smithing/actions/runs/31150604134)
+  （提交 `2fd4e02`）中 build、Fabric 1.21.1、NeoForge 21.1.226 + Connector beta.14 + FFAPI
+  2.2.4 全部成功。两端探针均确认铁剑 + 铁锭、钻石斧和钻石头盔材料修理可取且成本为 0；错误材料
+  被拒绝；下界合金剑只接受钻石、不接受下界合金锭；同物品合并与改名正常。
+
+绿测的 NeoForge 转换 jar/refmap 仍明确指向 `AnvilMenu.createResult()`，不含
+`createResultInternal`；导出的 `AnvilMenu` 显示 `allowFreeRepairs` 紧跟在最终
+`Mth.clamp` 与 `DataSlot.set` 之后。两个诊断日志均无 MixinApplyError、InvalidInjectionException、
+FATAL 或 crash-report，并记录了正常停服。
+
 ## 发布约束
 
 上游 Gradle 的 `fullRelease/githubRelease` 仍指向 `1.19` 标签，严禁用于此分支。
@@ -74,4 +89,4 @@ NeoForge job 会保存 Connector 实际转换缓存中的主模组 jar、转换�
 全部成功后，下载同一 Actions run 的主模组 artifact 并创建 fork Release。标签构建通过
 `-PreleaseVersion` 将版本写入 jar 名与模元数据；不会使用本地产物。
 
-红测与绿测 run URL、最终附件的名称、大小及 SHA-256 会在验证完成后补充到本文件。
+最终 Release 的 URL、附件名称、大小及 SHA-256 会在标签工作流全绿后补充到本文件。
