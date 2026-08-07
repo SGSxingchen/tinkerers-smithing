@@ -1,30 +1,75 @@
-name: Build
+name: 构建与 1.20.1 铁砧兼容性
 
-on: [ push, pull_request ]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup jdk
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
-          java-version: 21
-          distribution: 'temurin'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v3
         with:
           validate-wrappers: true
+      - name: 构建主模组与仅 CI 探针
+        run: ./gradlew build :ci-probe:remapJar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 模组-jars
+          path: |
+            build/libs/*.jar
+            ci-probe/build/libs/*.jar
 
-      - name: Build with Gradle
-        run: ./gradlew build
-
-      - name: capture build artifacts
+  fabric-1201:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: 模组-jars
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: 在 Fabric 1.20.1 服务端运行铁砧探针
+        run: ci/run-fabric-probe.sh
+      - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Artifacts
-          path: build/libs/
+          name: fabric-1201-诊断
+          path: |
+            .ci-fabric-server/console.log
+            .ci-fabric-server/compat-result.json
+            .ci-fabric-server/logs/**
+            .ci-fabric-server/.mixin.out/**
+
+  neoforge-1201-connector-ffapi:
+    needs: fabric-1201
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: 模组-jars
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: 在 NeoForge 1.20.1、Connector、FFAPI 服务端运行铁砧探针
+        run: ci/run-neoforge-probe.sh
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: neoforge-1201-connector-ffapi-诊断
+          path: |
+            .ci-neoforge-server/console.log
+            .ci-neoforge-server/compat-result.json
+            .ci-neoforge-server/logs/**
+            .ci-neoforge-server/.mixin.out/**

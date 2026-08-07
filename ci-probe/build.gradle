@@ -1,0 +1,28 @@
+plugins {
+	id 'fabric-loom'
+}
+
+archivesBaseName = "tinkerers-smithing-ci-probe"
+
+repositories {
+	maven { url "https://repo.sleeping.town/" }
+	maven { url "https://maven.terraformersmc.com/" }
+}
+
+dependencies {
+	minecraft libs.mc
+	mappings variantOf(libs.yarn) { classifier "v2" }
+	modImplementation libs.fl
+	modImplementation libs.fapi
+	modImplementation project(path: ":", configuration: "namedElements")
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.encoding = "UTF-8"
+	it.options.release = 17
+}
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+}
