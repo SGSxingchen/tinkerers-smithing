@@ -32,6 +32,11 @@ timeout 300 java -Dmixin.debug.verbose=true -Dmixin.debug.export=true -jar fabri
 server_status=${PIPESTATUS[0]}
 set -e
 
+mapfile -t exported_anvil_handlers < <(find "$WORK_DIR/.mixin.out" -type f \( -path '*/net/minecraft/class_1706.class' -o -path '*/net/minecraft/screen/AnvilScreenHandler.class' \) -print 2>/dev/null | sort)
+test "${#exported_anvil_handlers[@]}" -ge 1
+cp "${exported_anvil_handlers[0]}" fabric-exported-anvil-screen-handler.class
+javap -p -c -v fabric-exported-anvil-screen-handler.class > fabric-exported-anvil-screen-handler.javap.txt
+
 test "$server_status" -eq 0 || { echo "Fabric 1.21.1 服务端异常退出：$server_status" >&2; exit "$server_status"; }
 jq -e '.status == "PASS"' compat-result.json
 grep -Fq 'TS_ANVIL_1211_RESULT status=PASS' console.log

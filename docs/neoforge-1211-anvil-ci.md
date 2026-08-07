@@ -48,6 +48,23 @@ NeoForge job 会保存 Connector 实际转换缓存中的主模组 jar、转换�
 断言转换后的 refmap 仍指向 `AnvilMenu.createResult()`，且不包含 `createResultInternal`；生产修复
 只会根据这些产物与真实探针失败点决定。
 
+## 根因与最小修复
+
+红测 run [31149603197](https://github.com/SGSxingchen/tinkerers-smithing/actions/runs/31149603197)
+在同一次 Hosted Runner 验证中得到 Fabric 通过、NeoForge 失败；NeoForge 服务端正常停服，失败仅来自探针
+断言。增强证据 run [31149939607](https://github.com/SGSxingchen/tinkerers-smithing/actions/runs/31149939607)
+保存的真实 Connector 转换 jar、refmap 与导出 `AnvilMenu` 证明：目标仍是
+`AnvilMenu.createResult()`，并且运行时有 69 个动态修理配方、铁剑 + 铁锭配方存在。
+
+导出的 `AnvilMenu.createResult()` 字节码显示两个 `@ModifyVariable` 在 NeoForge 变换后命中了
+修理成本局部变量，并把它减一；成本不能累积时，原版的 `if (cost <= 0) result = EMPTY` 会清空
+输出，因此所有材料修理和同物品合并都失效。这也证明问题不是配方、`createResult` 目标或
+`createResultInternal`。
+
+该注入在 Fabric 的既有行为中不直接修改 `setDamage` 参数；因此不能草率改成 `@ModifyArg`，否则会
+改变 Fabric 修理量。CI 会同时保存 Fabric 导出的铁砧字节码，与 NeoForge 局部变量布局逐项对照后
+再实施只针对错误局部变量选择器的最小补丁。
+
 ## 发布约束
 
 上游 Gradle 的 `fullRelease/githubRelease` 仍指向 `1.19` 标签，严禁用于此分支。

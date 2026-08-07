@@ -90,6 +90,8 @@ jobs:
           path: |
             .ci-fabric-1211-server/console.log
             .ci-fabric-1211-server/compat-result.json
+            .ci-fabric-1211-server/fabric-exported-anvil-screen-handler.class
+            .ci-fabric-1211-server/fabric-exported-anvil-screen-handler.javap.txt
             .ci-fabric-1211-server/logs/**
             .ci-fabric-1211-server/.mixin.out/**
           if-no-files-found: warn
