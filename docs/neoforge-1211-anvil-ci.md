@@ -41,8 +41,9 @@
 均没有发现该方法：映射仍将 `AnvilScreenHandler.updateResult` 对应到
 `AnvilMenu.createResult`。因此不能仅凭 issue 把目标改到不存在的方法。
 
-NeoForge job 会保存 Connector 实际转换缓存中的主模组 jar、转换后 refmap 和
-`AnvilScreenHandlerMixin` 的 `javap -v` 输出，作为每次红绿测试的运行时转换证据。生产修复
+NeoForge job 会保存 Connector 实际转换缓存中的主模组 jar、转换后 refmap、`patch_audit.txt`
+和 `AnvilScreenHandlerMixin` 的 `javap -v` 输出，作为每次红绿测试的运行时转换证据。脚本严格
+断言转换后的 refmap 仍指向 `AnvilMenu.createResult()`，且不包含 `createResultInternal`；生产修复
 只会根据这些产物与真实探针失败点决定。
 
 ## 发布约束

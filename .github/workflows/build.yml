@@ -24,11 +24,24 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
-            ./gradlew build :ci-probe:remapJar -PreleaseVersion="${GITHUB_REF_NAME#v}"
-          else
-            ./gradlew build :ci-probe:remapJar
-          fi
+          run_build() {
+            if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+              ./gradlew build :ci-probe:remapJar -PreleaseVersion="${GITHUB_REF_NAME#v}"
+            else
+              ./gradlew build :ci-probe:remapJar
+            fi
+          }
+          set +e
+          run_build 2>&1 | tee ci-build.log
+          build_status=${PIPESTATUS[0]}
+          set -e
+          exit "$build_status"
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: 1.21.1-构建诊断
+          path: ci-build.log
+          if-no-files-found: error
       - name: 整理唯一的可运行 jar
         shell: bash
         run: |
@@ -110,6 +123,7 @@ jobs:
             .ci-neoforge-1211-server/connector-transformed-jars.txt
             .ci-neoforge-1211-server/connector-transformed-refmap.json
             .ci-neoforge-1211-server/connector-transformed-anvil-mixin.javap.txt
+            .ci-neoforge-1211-server/connector-patch-audit.txt
             .ci-neoforge-1211-server/mods/.connector/**
             .ci-neoforge-1211-server/logs/**
             .ci-neoforge-1211-server/.mixin.out/**
