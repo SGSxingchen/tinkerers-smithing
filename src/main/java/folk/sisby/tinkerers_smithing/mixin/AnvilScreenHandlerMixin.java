@@ -27,6 +27,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(AnvilScreenHandler.class)
@@ -72,7 +73,7 @@ public abstract class AnvilScreenHandlerMixin extends ForgingScreenHandler {
 		return original == 0 && this.repairItemUsage != 0 ? 1 : original;
 	}
 
-	@ModifyVariable(method = "updateResult", at = @At(value = "INVOKE", target = "Lnet/minecraft/screen/Property;set(I)V", ordinal = 5, shift = At.Shift.AFTER), ordinal = 0)
+	@ModifyVariable(method = "updateResult", at = @At(value = "INVOKE", target = "Lnet/minecraft/screen/Property;set(I)V", ordinal = 0, shift = At.Shift.AFTER), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/MathHelper;clamp(JJJ)J")), ordinal = 0)
 	private int allowFreeRepairs(int original) {
 		if (original == 0 && this.repairItemUsage != 0) {
 			this.levelCost.set(0); // Remove RepairCost cost

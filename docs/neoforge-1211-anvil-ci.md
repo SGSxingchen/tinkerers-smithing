@@ -56,14 +56,16 @@ NeoForge job 会保存 Connector 实际转换缓存中的主模组 jar、转换�
 保存的真实 Connector 转换 jar、refmap 与导出 `AnvilMenu` 证明：目标仍是
 `AnvilMenu.createResult()`，并且运行时有 69 个动态修理配方、铁剑 + 铁锭配方存在。
 
-导出的 `AnvilMenu.createResult()` 字节码显示两个 `@ModifyVariable` 在 NeoForge 变换后命中了
-修理成本局部变量，并把它减一；成本不能累积时，原版的 `if (cost <= 0) result = EMPTY` 会清空
-输出，因此所有材料修理和同物品合并都失效。这也证明问题不是配方、`createResult` 目标或
-`createResultInternal`。
+两个平台的导出字节码证明：材料修理的两个 `setDamage` 附近 `@ModifyVariable` 都是有意修改成本
+局部变量，而非伤害参数；不能改成 `@ModifyArg`，否则会改变 Fabric 修理量。真正偏移的是
+`allowFreeRepairs`：Fabric 把它放在“最终 cost 写入”之后，令零成本修理把局部成本改为 1，从而
+保留输出；NeoForge 因为 `Property.set` 的全局 ordinal 增加，把它放在仅处理 40 级限制的
+`cost.set(39)` 之后。普通材料修理不会走到那里，局部成本保留为 0，随后的
+`if (cost <= 0) result = EMPTY` 清空输出。
 
-该注入在 Fabric 的既有行为中不直接修改 `setDamage` 参数；因此不能草率改成 `@ModifyArg`，否则会
-改变 Fabric 修理量。CI 会同时保存 Fabric 导出的铁砧字节码，与 NeoForge 局部变量布局逐项对照后
-再实施只针对错误局部变量选择器的最小补丁。
+生产补丁只改变这一处选择器：从最终成本计算的 `MathHelper.clamp(long, long, long)` 开始切片，选择
+切片内第一次 `Property.set`。因此两端都精确命中最终 cost 写入，不再依赖会被 NeoForge 增加的
+全局调用 ordinal；规则层、配方、目标方法、修理伤害和其余注入均不改动。
 
 ## 发布约束
 
