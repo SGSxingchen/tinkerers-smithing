@@ -89,4 +89,15 @@ FATAL 或 crash-report，并记录了正常停服。
 全部成功后，下载同一 Actions run 的主模组 artifact 并创建 fork Release。标签构建通过
 `-PreleaseVersion` 将版本写入 jar 名与模元数据；不会使用本地产物。
 
-最终 Release 的 URL、附件名称、大小及 SHA-256 会在标签工作流全绿后补充到本文件。
+## 已发布附件
+
+标签工作流 [31151060297](https://github.com/SGSxingchen/tinkerers-smithing/actions/runs/31151060297)
+在 build、Fabric、NeoForge 与 release job 全部成功后发布
+[v2.7.2+1.21-neoforge-fix.1](https://github.com/SGSxingchen/tinkerers-smithing/releases/tag/v2.7.2%2B1.21-neoforge-fix.1)。
+
+| 附件 | 大小 | SHA-256 |
+| --- | ---: | --- |
+| `tinkerers-smithing-2.7.2+1.21-neoforge-fix.1.jar` | 436,412 B | `467281eb2a8c9696b7a4cf4d805536fd5a3cc53f1027aac2609313a772610972` |
+| `tinkerers-smithing-2.7.2+1.21-neoforge-fix.1.jar.sha256` | 132 B | `4b9a0fed5ac0aecd9b76a2ccd7667ae562af93a387803f3db623be458504f65b` |
+
+已下载 Release jar 并与同一全绿标签 Actions artifact 逐字节对比，二者一致；没有使用本地产物。
