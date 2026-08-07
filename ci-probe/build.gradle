@@ -1,0 +1,34 @@
+plugins {
+	id 'fabric-loom'
+}
+
+archivesBaseName = "tinkerers-smithing-ci-probe"
+version = rootProject.version
+
+repositories {
+	maven { url "https://repo.sleeping.town/" }
+	maven { url "https://maven.terraformersmc.com/" }
+}
+
+dependencies {
+	minecraft libs.mc
+	mappings variantOf(libs.yarn) { classifier "v2" }
+	modImplementation libs.fl
+	modImplementation libs.fapi
+	// 探针只在编译时读取主模组公开类；CI 会将两个 remap 后的 jar 一起放进服务端 mods。
+	compileOnly rootProject.sourceSets.main.output
+}
+
+tasks.named("compileJava") {
+	dependsOn rootProject.tasks.named("classes")
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.encoding = "UTF-8"
+	it.options.release = 17
+}
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+}

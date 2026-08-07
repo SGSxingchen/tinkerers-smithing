@@ -12,3 +12,6 @@ dependencyResolutionManagement {
 		}
 	}
 }
+
+// 仅供 GitHub Hosted Runner 的端到端兼容性验证使用；不参与主模组发布。
+include("ci-probe")

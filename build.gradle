@@ -8,7 +8,8 @@ plugins {
 	alias libs.plugins.curse
 }
 
-version = "$baseVersion+$branch"
+// 发布分支默认仍保持上游版本；仅由受 CI 验证的 Release 工作流显式覆盖。
+version = providers.gradleProperty("releaseVersion").getOrElse("$baseVersion+$branch")
 archivesBaseName = project.slug
 
 repositories {
@@ -122,4 +123,3 @@ tasks.register("fullRelease") {
 	dependsOn "modrinth"
 	dependsOn "curseforge"
 }
-
