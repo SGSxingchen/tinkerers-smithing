@@ -121,9 +121,12 @@ jobs:
             .ci-neoforge-1211-server/console.log
             .ci-neoforge-1211-server/compat-result.json
             .ci-neoforge-1211-server/connector-transformed-jars.txt
+            .ci-neoforge-1211-server/connector-transformed-tinkerers-smithing.jar
             .ci-neoforge-1211-server/connector-transformed-refmap.json
             .ci-neoforge-1211-server/connector-transformed-anvil-mixin.javap.txt
             .ci-neoforge-1211-server/connector-patch-audit.txt
+            .ci-neoforge-1211-server/connector-exported-anvil-menu.class
+            .ci-neoforge-1211-server/connector-exported-anvil-menu.javap.txt
             .ci-neoforge-1211-server/mods/.connector/**
             .ci-neoforge-1211-server/logs/**
             .ci-neoforge-1211-server/.mixin.out/**

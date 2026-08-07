@@ -2,6 +2,7 @@ package folk.sisby.tinkerers_smithing.ci;
 
 import com.mojang.authlib.GameProfile;
 import folk.sisby.tinkerers_smithing.TinkerersSmithing;
+import folk.sisby.tinkerers_smithing.recipe.ShapelessRepairRecipe;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.component.DataComponentTypes;
@@ -10,6 +11,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
+import net.minecraft.recipe.CraftingRecipe;
+import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.recipe.RecipeType;
 import net.minecraft.screen.AnvilScreenHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -17,6 +21,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -39,6 +44,10 @@ public final class AnvilCompatibilityProbe implements ModInitializer {
 				new GameProfile(UUID.randomUUID(), "ts_ci_probe"),
 				SyncedClientOptions.createDefault()
 			);
+			List<RecipeEntry<CraftingRecipe>> crafting = player.getWorld().getRecipeManager().listAllOfType(RecipeType.CRAFTING);
+			long runtimeRepairRecipes = crafting.stream().filter(entry -> entry.value() instanceof ShapelessRepairRecipe).count();
+			boolean ironRepairRecipe = crafting.stream().anyMatch(entry -> entry.value() instanceof ShapelessRepairRecipe repair
+				&& repair.baseItem == Items.IRON_SWORD && repair.addition.test(new ItemStack(Items.IRON_INGOT)));
 
 			// 材料修理应在零经验等级下仍可取走；这同时验证输出、伤害和免费修理路径。
 			player.experienceLevel = 0;
@@ -57,7 +66,8 @@ public final class AnvilCompatibilityProbe implements ModInitializer {
 			boolean passed = ironSword.isFreeRepair() && diamondAxe.isFreeRepair() && diamondHelmet.isFreeRepair()
 				&& wrongMaterial.isRejected() && netheriteDiamond.isFreeRepair() && netheriteIngot.isRejected()
 				&& sameItemCombine.isRepair() && rename.isRename();
-			String detail = "iron_sword+iron_ingot=" + ironSword
+			String detail = "runtime_repair_recipes=" + runtimeRepairRecipes + ", iron_repair_recipe=" + ironRepairRecipe
+				+ ", iron_sword+iron_ingot=" + ironSword
 				+ ", diamond_axe+diamond=" + diamondAxe
 				+ ", diamond_helmet+diamond=" + diamondHelmet
 				+ ", iron_sword+diamond=" + wrongMaterial

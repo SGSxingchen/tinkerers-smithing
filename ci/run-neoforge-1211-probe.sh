@@ -48,8 +48,9 @@ for candidate in "${transformed_jars[@]}"; do
 	fi
 done
 test -n "$transformed_mixin_jar"
+cp "$transformed_mixin_jar" connector-transformed-tinkerers-smithing.jar
 unzip -p "$transformed_mixin_jar" tinkerers-smithing-refmap.json > connector-transformed-refmap.json
-javap -classpath "$transformed_mixin_jar" -v folk.sisby.tinkerers_smithing.mixin.AnvilScreenHandlerMixin > connector-transformed-anvil-mixin.javap.txt
+javap -classpath "$transformed_mixin_jar" -p -c -v folk.sisby.tinkerers_smithing.mixin.AnvilScreenHandlerMixin > connector-transformed-anvil-mixin.javap.txt
 cp "$WORK_DIR/mods/.connector/patch_audit.txt" connector-patch-audit.txt
 # 这是 beta.14 的实际转换产物，不依赖 issue 的方法名叙述；目标必须仍是 NeoForge 的 createResult。
 grep -Fq 'Lnet/minecraft/world/inventory/AnvilMenu;createResult()V' connector-transformed-refmap.json
@@ -57,6 +58,10 @@ if grep -Fq 'createResultInternal' connector-transformed-refmap.json; then
 	echo "Connector 转换产物意外指向 createResultInternal" >&2
 	exit 1
 fi
+mapfile -t exported_anvil_menus < <(find "$WORK_DIR/.mixin.out" -type f -path '*/net/minecraft/world/inventory/AnvilMenu.class' -print 2>/dev/null | sort)
+test "${#exported_anvil_menus[@]}" -ge 1
+cp "${exported_anvil_menus[0]}" connector-exported-anvil-menu.class
+javap -p -c -v connector-exported-anvil-menu.class > connector-exported-anvil-menu.javap.txt
 
 test "$server_status" -eq 0 || { echo "NeoForge 1.21.1 服务端异常退出：$server_status" >&2; exit "$server_status"; }
 jq -e '.status == "PASS"' compat-result.json
